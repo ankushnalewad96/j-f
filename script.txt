@@ -1,0 +1,79 @@
+def scrap(file_path):
+    
+    Output=[]
+    
+    # pytesseract path for image scrapping: give your path
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe' 
+
+    # poppler_path: give your path
+    poppler_path= r'C:\Program Files\poppler-0.68.0_x86\poppler-0.68.0\bin'
+    
+    # pdf to image conversion
+    images = convert_from_path(file_path, poppler_path= r'C:\Program Files\poppler-0.68.0_x86\poppler-0.68.0\bin')
+    # image to string conversion
+    text = pytesseract.image_to_string(images[0])
+    
+    # removing multispace from string
+    text1 = re.sub('\n+','\n',text)
+    #converting string to list
+    text2 = text1.split('\n')
+     
+    for line in text2:
+        
+        # scrapping label of tabel
+        label = re.findall(r'\bIndex.+',line,re.IGNORECASE) 
+        # assigning into new variable 
+        new_label =label
+
+        # to scrap lines which starts with index like{ 1-cap & 2-digit ex. F00} and {ends with name ex.MHV}
+        pattern_last_name= re.findall('[A-Z][0-9o]{2}.+\s[A-Z]{3}$',line,re.IGNORECASE)  
+        # to scrap lines which starts with index like{digit or alpha ex.1,2,a,b} and {ends with name ex.MHV}
+        pattern_last_date=re.findall('[0-9a-z]{1}\s[A-Z]{1}[a-z]{2}.+[A-Z]{3}.[0-9]{2}.[0-9]{2}.[0-9]{4}$',line,re.IGNORECASE)
+        
+        
+        if bool(label)==True:
+            # pattern of table
+            print(f'pattern of table is : {label}')
+            print('\n')
+            
+            Output.append(label)
+            
+        if bool(pattern_last_name)==True:
+            
+#             pattern_last_name1 = re.findall('[A-Z][0-9o]{2}[^\=\+\@\>\<]+\s[A-Z]{3}$',line)
+            pattern_last_name1 = re.findall('[A-Z][0-9o]{2}.+\s[A-Z]{3}$',pattern_last_name[0],re.IGNORECASE)
+
+            
+            pattern_last_name2 = re.findall(r'\b[0-9]{1}[^\=\:\+\@\>\<]+\s[A-Z]{3}$',pattern_last_name[0])
+
+            
+            
+            if (bool(pattern_last_name1)==True):
+                
+                if len(pattern_last_name1[0])>20:
+                    
+                    Output.append(pattern_last_name1)
+    
+                if (bool(pattern_last_name2)==True):
+            
+                    if len(pattern_last_name2[0])>20:
+                    
+                       
+
+                        Output.append(pattern_last_name2)
+
+
+                    
+                
+        elif (bool(pattern_last_date)==True):
+            
+            pattern_last_date1 = re.findall('[0-9a-z]{1}\s[A-Z]{1}[^\=\:\+\@\>\<]+[A-Z]{3}.[0-9]{2}.[0-9]{2}.[0-9]{4}$',pattern_last_date[0])
+                                
+            if len(pattern_last_date1)>0:
+                
+                Output.append(pattern_last_date1)
+                
+
+                
+                
+    return Output
